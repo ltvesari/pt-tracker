@@ -28,7 +28,9 @@ export default function Register() {
             // Auto login or redirect to login? Let's redirect for now
             navigate("/login");
         } catch (err) {
-            setError("Kayıt başarısız. Kullanıcı adı veya email alınmış olabilir.");
+            console.error(err);
+            const msg = err.response?.data?.detail || "Kayıt başarısız. Bilgilerinizi kontrol edin.";
+            setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
         }
     };
 
