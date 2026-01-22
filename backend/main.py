@@ -41,14 +41,6 @@ app.include_router(admin.router)
 
 @app.on_event("startup")
 def on_startup():
-    # Attempt to drop old conflicting table "user" if it exists (one-time fix for Postgres)
-    try:
-        with Session(engine) as session:
-            session.exec(text('DROP TABLE IF EXISTS "user"'))
-            session.commit()
-    except Exception as e:
-        print(f"Cleanup of old table failed (ignoring): {e}")
-
     create_db_and_tables()
     
     # Create Default Admin
