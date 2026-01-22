@@ -43,23 +43,6 @@ app.include_router(admin.router)
 def on_startup():
     create_db_and_tables()
     
-    # Manual Migration for 'is_admin' column (since SQLModel create_all doesn't alter existing tables)
-    with Session(engine) as session:
-        try:
-            # Try to select the column to see if it exists
-            session.exec(text('SELECT is_admin FROM "user" LIMIT 1'))
-        except Exception:
-            print("Column is_admin not found, adding it...")
-            try:
-                # Add the column
-                session.exec(text('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT FALSE'))
-                session.commit()
-                print("Column is_admin added successfully.")
-            except Exception as e:
-                print(f"Migration failed: {e}")
-                # Don't raise, might be SQLite or other issue, proceed to let SQLModel try its thing if it can
-                session.rollback()
-
     # Create Default Admin
     with Session(engine) as session:
         try:
