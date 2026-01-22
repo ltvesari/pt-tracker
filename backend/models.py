@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True)
     receive_daily_backup: bool = False
     receive_weekly_backup: bool = False
+    is_admin: bool = Field(default=False)
 
 class Student(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
