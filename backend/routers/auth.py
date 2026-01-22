@@ -35,6 +35,8 @@ class LoginRequest(BaseModel):
 
 def verify_password(plain_password, hashed_password):
     # return pwd_context.verify(plain_password, hashed_password)
+    # Debug:
+    # print(f"Verifying: {plain_password} vs {hashed_password}")
     return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
 
 def get_password_hash(password):
@@ -113,12 +115,26 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 
 @router.post("/login", response_model=Token)
 def login(form_data: LoginRequest, session: Session = Depends(get_session)):
+    print(f"Login attempt for: {form_data.username}")
     user = session.exec(select(User).where(User.username == form_data.username)).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+    if not user:
+        print("User not found in DB")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    if not verify_password(form_data.password, user.password_hash):
+        print(f"Password mismatch for {form_data.username}")
+        # print(f"Input hash: {hashlib.sha256(form_data.password.encode()).hexdigest()}")
+        # print(f"DB hash:    {user.password_hash}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    print("Login successful")
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
