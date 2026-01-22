@@ -69,6 +69,41 @@ def on_startup():
         except Exception as e:
             print(f"Admin creation failed: {e}")
 
+@app.get("/init-db")
+def init_db():
+    log = []
+    try:
+        log.append("Starting manual DB init...")
+        create_db_and_tables()
+        log.append("Tables created (SQLModel.metadata.create_all).")
+        
+        with Session(engine) as session:
+            admin_user = session.exec(select(User).where(User.username == "admin")).first()
+            if not admin_user:
+                log.append("Admin not found. Creating...")
+                admin_user = User(
+                    username="admin",
+                    password_hash=get_password_hash("1189*"),
+                    first_name="Super",
+                    last_name="Admin",
+                    email="admin@pt-tracker.com",
+                    is_admin=True
+                )
+                session.add(admin_user)
+                session.commit()
+                log.append("Admin created successfully.")
+            else:
+                log.append("Admin already exists.")
+                if not admin_user.is_admin:
+                    admin_user.is_admin = True
+                    session.add(admin_user)
+                    session.commit()
+                    log.append("Fixed admin privileges.")
+                    
+        return {"status": "success", "log": log}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "log": log}
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to PT Tracker API"}
