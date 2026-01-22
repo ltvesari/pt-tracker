@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-gray-900 bg-[#eaf4ff] selection:bg-gold-500/30 selection:text-gold-500 transition-colors duration-500;
+  }
+
+  .dark body {
+    /* Ultimate Luxury Depth Background */
+    background: radial-gradient(circle at 60% -20%, #1e1e2aec 0%, #000000 100%);
+    background-attachment: fixed;
+    @apply text-gray-100;
+  }
+}
+
+@layer components {
+
+  /* --- Glassmorphism 2.0 --- */
+  .glass-card {
+    /* Crisp, clean glass with slight saturation boost for vibrancy */
+    @apply bg-white/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/40 shadow-xl rounded-3xl relative overflow-hidden ring-1 ring-white/20;
+  }
+
+  .dark .glass-card {
+    @apply bg-[#18181b]/60 border-white/5 shadow-2xl shadow-black/60 ring-white/5;
+  }
+
+  /* --- Neumorphism & Interaction --- */
+  .card-hover {
+    @apply transition-all duration-500 ease-out hover:-translate-y-2 hover:border-gold-500/30 hover:bg-white/80 dark:hover:bg-[#202025]/80;
+  }
+
+  .card-hover:hover {
+    box-shadow: 0 20px 40px -15px rgba(212, 175, 55, 0.15);
+  }
+
+  /* --- Minimalist Inputs (Inner Depth) --- */
+  .input-field {
+    @apply w-full px-5 py-4 rounded-2xl bg-gray-100 border-none text-gray-900 focus:bg-white outline-none transition-all duration-300 placeholder:text-gray-400 font-medium;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  .input-field:focus {
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .input-field {
+    @apply bg-[#0a0a0a]/50 text-white focus:bg-[#0a0a0a]/80;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .dark .input-field:focus {
+    box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+
+  .dark .input-field option {
+    @apply bg-gray-900 text-white;
+  }
+
+  /* --- 3D / Pop Buttons --- */
+  .btn-primary {
+    @apply px-8 py-3.5 bg-gradient-to-br from-gold-400 via-gold-500 to-gold-600 text-black font-bold tracking-wide rounded-2xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300;
+    box-shadow: 0 10px 20px -5px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 15px 25px -5px rgba(212, 175, 55, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  .btn-primary:active {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-danger {
+    @apply px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500/20 hover:border-red-500/40 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300;
+  }
+}
+
+/* --- Utilities --- */
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-800 rounded-full hover:bg-gold-500 transition-colors;
+}
+
+/* Animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}

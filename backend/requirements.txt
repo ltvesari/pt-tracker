@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlmodel
+aiosqlite
+python-jose[cryptography]
+passlib[bcrypt]
+slowapi
+python-multipart
+reportlab
+secure-smtplib
+schedule
