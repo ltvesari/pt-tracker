@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from backend.database import get_session
@@ -63,3 +64,30 @@ async def send_manual_backup(
     result = await send_email(subject, [current_user.email], body)
     
     return result
+
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from backend.models import Student, LessonLog, BodyMeasurement
+
+@router.get("/export-data")
+def export_data(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    # Fetch all data
+    students = session.exec(select(Student)).all()
+    logs = session.exec(select(LessonLog)).all()
+    measurements = session.exec(select(BodyMeasurement)).all()
+    
+    data = {
+        "export_date": str(datetime.utcnow()),
+        "user": current_user.username,
+        "students": [jsonable_encoder(s) for s in students],
+        "logs": [jsonable_encoder(l) for l in logs],
+        "measurements": [jsonable_encoder(m) for m in measurements]
+    }
+    
+    return JSONResponse(
+        content=data,
+        headers={"Content-Disposition": f"attachment; filename=pt_tracker_backup.json"}
+    )
