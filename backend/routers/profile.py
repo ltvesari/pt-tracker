@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from backend.database import get_session
 from backend.models import User
 from backend.routers.auth import get_current_user
+from backend.utils.email import send_email
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -35,3 +36,24 @@ def update_settings(
     session.commit()
     session.refresh(user_db)
     return user_db
+
+@router.post("/send-backup")
+async def send_manual_backup(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Triggers a manual backup email to the current user.
+    """
+    subject = "PT Tracker - Manuel Yedek"
+    body = f"""
+    <h1>Merhaba {current_user.first_name},</h1>
+    <p>Manuel olarak talep ettiğiniz yedekleme işlemi başarıyla tetiklendi.</p>
+    <p>Şu an için bu bir test mailidir. İlerleyen güncellemelerde burada veritabanı yedeğiniz (PDF/JSON) eklenecektir.</p>
+    <br/>
+    <p>Saygılar,<br/>PT Tracker Ekibi</p>
+    """
+    
+    # Send email
+    result = await send_email(subject, [current_user.email], body)
+    
+    return result

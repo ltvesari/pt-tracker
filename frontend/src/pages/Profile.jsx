@@ -47,8 +47,21 @@ export default function Profile() {
         }
     };
 
-    const handleManualBackup = () => {
-        alert("Yedek PDF hazırlanıyor ve mail atılıyor... (Demo)");
+    const handleManualBackup = async () => {
+        if (!confirm("Manuel yedek maili gönderilsin mi?")) return;
+
+        try {
+            alert("İşlem başlatıldı, lütfen bekleyin...");
+            const res = await api.post("/profile/send-backup");
+            if (res.data.error) {
+                alert("Mail gönderilemedi: " + res.data.error);
+            } else {
+                alert("✅ " + (res.data.message || "Mail gönderildi!"));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Bir hata oluştu.");
+        }
     };
 
     return (
