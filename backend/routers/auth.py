@@ -155,7 +155,8 @@ async def forgot_password(request: ForgotPasswordRequest, session: Session = Dep
         # But user wants functionality.
         # Let's return success but log it.
         print(f"Password reset requested for non-existent email: {request.email}")
-        return {"message": "Eğer bu email adresi sistemde kayıtlıysa, yeni şifreniz gönderilmiştir."}
+        print(f"Password reset requested for non-existent email: {request.email}")
+        return {"message": "Sistemde bu email adresiyle kayıtlı bir kullanıcı bulunamadı."}
     
     # Generate Temp Password
     alphabet = string.ascii_letters + string.digits
