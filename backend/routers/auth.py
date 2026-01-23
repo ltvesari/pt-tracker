@@ -144,17 +144,12 @@ class ForgotPasswordRequest(BaseModel):
 
 import secrets
 import string
-from backend.utils.email import send_email
+from backend.utils.emailjs import send_email_via_api
 
 @router.post("/forgot-password")
 async def forgot_password(request: ForgotPasswordRequest, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == request.email)).first()
     if not user:
-        # Don't reveal if user exists or not for security, but for now helpful debug
-        # Just say "If this email is registered, we sent a reset link."
-        # But user wants functionality.
-        # Let's return success but log it.
-        print(f"Password reset requested for non-existent email: {request.email}")
         print(f"Password reset requested for non-existent email: {request.email}")
         return {"message": "Sistemde bu email adresiyle kayıtlı bir kullanıcı bulunamadı."}
     
@@ -168,18 +163,15 @@ async def forgot_password(request: ForgotPasswordRequest, session: Session = Dep
     session.commit()
     session.refresh(user)
     
-    # Send Email
-    subject = "PT Tracker - Yeni Şifreniz"
-    body = f"""
-    <h1>Şifre Sıfırlama</h1>
-    <p>Merhaba {user.first_name},</p>
-    <p>Şifre sıfırlama talebiniz üzerine geçici şifreniz oluşturuldu:</p>
-    <h2 style="background: #eee; padding: 10px; display: inline-block;">{temp_password}</h2>
-    <p>Lütfen giriş yaptıktan sonra profilinizden şifrenizi değiştirmeyi unutmayın.</p>
-    <br/>
-    <p>Saygılar,<br/>PT Tracker Ekibi</p>
-    """
+    # Send Email via API
+    message_content = f"Şifre sıfırlama talebiniz üzerine geçici şifreniz: {temp_password}"
     
-    await send_email(subject, [user.email], body)
+    template_params = {
+        "to_name": user.first_name,
+        "to_email": user.email,
+        "message": message_content
+    }
+    
+    await send_email_via_api(template_params)
     
     return {"message": "Yeni şifreniz email adresinize gönderildi."}
