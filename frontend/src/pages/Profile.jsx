@@ -3,6 +3,7 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
 import { User, Mail, Shield, Save, FileText, Download } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 export default function Profile() {
     const { user, logout } = useAuth();
@@ -53,15 +54,34 @@ export default function Profile() {
 
         try {
             alert("İşlem başlatıldı, lütfen bekleyin...");
-            const res = await api.post("/profile/send-backup");
-            if (res.data.error) {
-                alert("Mail gönderilemedi: " + res.data.error);
-            } else {
-                alert("✅ " + (res.data.message || "Mail gönderildi!"));
-            }
+
+            // We need to import emailjs dynamically or at top. Let's do dynamic for safety or top.
+            // Since replace_file_content can't easily add top import if not contiguous, 
+            // I'll add the import at the top in a separate call if needed, OR just use window.emailjs if CDN, but we installed package.
+            // Let's assume I will add import at top in next step. For now write the logic.
+
+            // Actually, I can use the global `emailjs` object if I import it. 
+            // Let's modify the whole file to include import.
+            // Valid constraint: "Use this tool ONLY when you are making a SINGLE CONTIGUOUS block...".
+            // I will replace the function here, and then add import at top in next step.
+
+            const templateParams = {
+                to_name: formData.first_name || user.username,
+                to_email: formData.email,
+                message: "Manuel yedekleme talebiniz alınmıştır. Verilerinizi panelden indirebilirsiniz.",
+            };
+
+            await emailjs.send(
+                "service_x2qla28",
+                "template_yvxepgr",
+                templateParams,
+                "FThhlELIJPFP38k42"
+            );
+
+            alert("✅ Mail başarıyla gönderildi!");
         } catch (err) {
             console.error(err);
-            alert("Bir hata oluştu.");
+            alert("Mail gönderilemedi: " + JSON.stringify(err));
         }
     };
 
