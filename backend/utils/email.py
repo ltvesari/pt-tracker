@@ -7,14 +7,18 @@ from typing import List
 # Users must set MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM, MAIL_PORT, MAIL_SERVER
 # Default to Gmail for convenience if minimal vars are present
 
+# Load config from Env
+mail_port = int(os.getenv("MAIL_PORT", 587))
+use_ssl = (mail_port == 465)
+
 conf = ConnectionConfig(
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", "example@gmail.com"),
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "secret"),
     MAIL_FROM = os.getenv("MAIL_FROM", "admin@pt-tracker.com"),
-    MAIL_PORT = int(os.getenv("MAIL_PORT", 587)),
+    MAIL_PORT = mail_port,
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS = True,
-    MAIL_SSL_TLS = False,
+    MAIL_STARTTLS = not use_ssl,  # 587 uses StartTLS
+    MAIL_SSL_TLS = use_ssl,       # 465 uses SSL
     USE_CREDENTIALS = True,
     VALIDATE_CERTS = True
 )
