@@ -138,3 +138,47 @@ def login(form_data: LoginRequest, session: Session = Depends(get_session)):
     print("Login successful")
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+import secrets
+import string
+from backend.utils.email import send_email
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.email == request.email)).first()
+    if not user:
+        # Don't reveal if user exists or not for security, but for now helpful debug
+        # Just say "If this email is registered, we sent a reset link."
+        # But user wants functionality.
+        # Let's return success but log it.
+        print(f"Password reset requested for non-existent email: {request.email}")
+        return {"message": "Eğer bu email adresi sistemde kayıtlıysa, yeni şifreniz gönderilmiştir."}
+    
+    # Generate Temp Password
+    alphabet = string.ascii_letters + string.digits
+    temp_password = ''.join(secrets.choice(alphabet) for i in range(8))
+    
+    # Update DB
+    user.password_hash = get_password_hash(temp_password)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    
+    # Send Email
+    subject = "PT Tracker - Yeni Şifreniz"
+    body = f"""
+    <h1>Şifre Sıfırlama</h1>
+    <p>Merhaba {user.first_name},</p>
+    <p>Şifre sıfırlama talebiniz üzerine geçici şifreniz oluşturuldu:</p>
+    <h2 style="background: #eee; padding: 10px; display: inline-block;">{temp_password}</h2>
+    <p>Lütfen giriş yaptıktan sonra profilinizden şifrenizi değiştirmeyi unutmayın.</p>
+    <br/>
+    <p>Saygılar,<br/>PT Tracker Ekibi</p>
+    """
+    
+    await send_email(subject, [user.email], body)
+    
+    return {"message": "Yeni şifreniz email adresinize gönderildi."}
