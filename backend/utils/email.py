@@ -9,7 +9,13 @@ from typing import List
 
 # Load config from Env
 mail_port = int(os.getenv("MAIL_PORT", 587))
+
+# Railway/Gmail Standard Config
+# Port 587 -> STARTTLS = True, SSL = False
+# Port 465 -> STARTTLS = False, SSL = True
+
 use_ssl = (mail_port == 465)
+use_tls = (mail_port == 587)
 
 conf = ConnectionConfig(
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", "example@gmail.com"),
@@ -17,10 +23,11 @@ conf = ConnectionConfig(
     MAIL_FROM = os.getenv("MAIL_FROM", "admin@pt-tracker.com"),
     MAIL_PORT = mail_port,
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS = not use_ssl,  # 587 uses StartTLS
-    MAIL_SSL_TLS = use_ssl,       # 465 uses SSL
+    MAIL_STARTTLS = use_tls,
+    MAIL_SSL_TLS = use_ssl,
     USE_CREDENTIALS = True,
-    VALIDATE_CERTS = True
+    VALIDATE_CERTS = True,
+    TIMEOUT = 30 # Increase timeout
 )
 
 async def send_email(subject: str, recipients: List[EmailStr], body: str):
