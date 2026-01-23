@@ -37,7 +37,7 @@ export default function Profile() {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.put("/profile/me", formData);
+            await api.put("/profile/settings", formData);
             alert("Ayarlar güncellendi! ✅");
         } catch (err) {
             console.error(err);
