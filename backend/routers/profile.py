@@ -57,12 +57,20 @@ def export_pdf_report(
     # Fetch data
     logs = session.exec(select(LessonLog).order_by(LessonLog.date.desc())).all()
     
+    # Register Font
+    import os
+    font_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fonts", "Roboto-Regular.ttf")
+    pdfmetrics.registerFont(TTFont('Roboto-Regular', font_path))
+    
     # Create PDF buffer
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     elements = []
     
     styles = getSampleStyleSheet()
+    styles['Normal'].fontName = 'Roboto-Regular'
+    styles['Title'].fontName = 'Roboto-Regular'
+    
     title_style = styles["Title"]
     normal_style = styles["Normal"]
     
@@ -99,7 +107,7 @@ def export_pdf_report(
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Roboto-Regular'),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
