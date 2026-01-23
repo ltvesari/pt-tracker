@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from backend.database import get_session
 from backend.models import User
 from backend.routers.auth import get_current_user
-from backend.utils.email import send_email
+# from backend.utils.email import send_email # Removed
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -13,8 +13,6 @@ class UserUpdate(BaseModel):
     first_name: str
     last_name: str
     email: str
-    receive_daily_backup: bool
-    receive_weekly_backup: bool
 
 @router.put("/settings")
 def update_settings(
@@ -36,34 +34,87 @@ def update_settings(
     user_db.first_name = settings.first_name
     user_db.last_name = settings.last_name
     user_db.email = settings.email
-    user_db.receive_daily_backup = settings.receive_daily_backup
-    user_db.receive_weekly_backup = settings.receive_weekly_backup
     
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
     return user_db
 
-@router.post("/send-backup")
-async def send_manual_backup(
-    current_user: User = Depends(get_current_user)
+from fastapi.responses import StreamingResponse
+import io
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+@router.get("/export-pdf")
+def export_pdf_report(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
 ):
-    """
-    Triggers a manual backup email to the current user.
-    """
-    subject = "PT Tracker - Manuel Yedek"
-    body = f"""
-    <h1>Merhaba {current_user.first_name},</h1>
-    <p>Manuel olarak talep ettiğiniz yedekleme işlemi başarıyla tetiklendi.</p>
-    <p>Şu an için bu bir test mailidir. İlerleyen güncellemelerde burada veritabanı yedeğiniz (PDF/JSON) eklenecektir.</p>
-    <br/>
-    <p>Saygılar,<br/>PT Tracker Ekibi</p>
-    """
+    # Fetch data
+    logs = session.exec(select(LessonLog).order_by(LessonLog.date.desc())).all()
     
-    # Send email
-    result = await send_email(subject, [current_user.email], body)
+    # Create PDF buffer
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
     
-    return result
+    styles = getSampleStyleSheet()
+    title_style = styles["Title"]
+    normal_style = styles["Normal"]
+    
+    # Title
+    elements.append(Paragraph(f"PT Tracker - Ders Raporu ({datetime.now().strftime('%d.%m.%Y')})", title_style))
+    elements.append(Spacer(1, 20))
+    
+    # Summary
+    total_lessons = sum(1 for l in logs if l.type == 'deduct')
+    elements.append(Paragraph(f"Toplam İşlenen Ders: {total_lessons}", normal_style))
+    elements.append(Spacer(1, 20))
+    
+    # Table Data
+    data = [["Tarih", "Öğrenci", "İşlem", "Miktar"]]
+    
+    for log in logs:
+        student_name = f"{log.student.first_name} {log.student.last_name}" if log.student else "Silinmiş Öğrenci"
+        action = "Ders İşlendi" if log.type == 'deduct' else \
+                 "Paket Eklendi" if log.type == 'add' else \
+                 "İptal/İade"
+                 
+        count_str = f"-{log.count}" if log.type == 'deduct' else f"+{log.count}"
+        
+        data.append([
+            log.date.strftime("%d.%m.%Y %H:%M"),
+            student_name,
+            action,
+            count_str
+        ])
+        
+    # Table Style
+    table = Table(data, colWidths=[100, 150, 100, 80])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    elements.append(table)
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=ders_raporu_{datetime.now().strftime('%Y%m%d')}.pdf"}
+    )
 
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder

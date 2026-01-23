@@ -2,17 +2,14 @@ import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
-import { User, Mail, Shield, Save, FileText, Download } from "lucide-react";
-import emailjs from "@emailjs/browser";
+import { User, Shield, Save, FileText, Download, FileDown, Mail } from "lucide-react";
 
 export default function Profile() {
     const { user, logout } = useAuth();
     const [formData, setFormData] = useState({
         first_name: "",
         last_name: "",
-        email: "",
-        receive_daily_backup: false,
-        receive_weekly_backup: false
+        email: ""
     });
     const [loading, setLoading] = useState(false);
 
@@ -23,9 +20,7 @@ export default function Profile() {
                 setFormData({
                     first_name: res.data.first_name,
                     last_name: res.data.last_name,
-                    email: res.data.email,
-                    receive_daily_backup: res.data.receive_daily_backup,
-                    receive_weekly_backup: res.data.receive_weekly_backup
+                    email: res.data.email
                 });
             } catch (err) {
                 console.error("Profil yüklenemedi", err);
@@ -49,39 +44,23 @@ export default function Profile() {
         }
     };
 
-    const handleManualBackup = async () => {
-        if (!confirm("Manuel yedek maili gönderilsin mi?")) return;
-
+    const handleDownloadReport = async () => {
         try {
-            alert("İşlem başlatıldı, lütfen bekleyin...");
+            setLoading(true);
+            const res = await api.get("/profile/export-pdf", { responseType: 'blob' });
 
-            // We need to import emailjs dynamically or at top. Let's do dynamic for safety or top.
-            // Since replace_file_content can't easily add top import if not contiguous, 
-            // I'll add the import at the top in a separate call if needed, OR just use window.emailjs if CDN, but we installed package.
-            // Let's assume I will add import at top in next step. For now write the logic.
-
-            // Actually, I can use the global `emailjs` object if I import it. 
-            // Let's modify the whole file to include import.
-            // Valid constraint: "Use this tool ONLY when you are making a SINGLE CONTIGUOUS block...".
-            // I will replace the function here, and then add import at top in next step.
-
-            const templateParams = {
-                to_name: formData.first_name || user.username,
-                to_email: formData.email,
-                message: "Manuel yedekleme talebiniz alınmıştır. Verilerinizi panelden indirebilirsiniz.",
-            };
-
-            await emailjs.send(
-                "service_x2qla28",
-                "template_yvxepgr",
-                templateParams,
-                "FThhlELIJPFP38k42"
-            );
-
-            alert("✅ Mail başarıyla gönderildi!");
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `pt_tracker_ders_raporu_${new Date().toISOString().slice(0, 10)}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
         } catch (err) {
-            console.error(err);
-            alert("Mail gönderilemedi: " + JSON.stringify(err));
+            console.error("PDF indirilemedi", err);
+            alert("Rapor oluşturulurken hata oluştu.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -141,8 +120,11 @@ export default function Profile() {
                             </div>
                         </div>
 
+
+
+
                         <div className="space-y-1">
-                            <label className="text-sm text-gray-500">Email (Raporlar buraya gönderilir)</label>
+                            <label className="text-sm text-gray-500">Email</label>
                             <div className="relative">
                                 <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
@@ -151,40 +133,6 @@ export default function Profile() {
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                 />
-                            </div>
-                        </div>
-
-                        <div className="pt-4">
-                            <h3 className="font-bold border-b border-gray-100 dark:border-white/10 pb-2 mb-4 flex items-center gap-2">
-                                <Shield size={18} className="text-gold-500" />
-                                Yedekleme Tercihleri
-                            </h3>
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        className="w-5 h-5 text-gold-500 rounded focus:ring-gold-500"
-                                        checked={formData.receive_daily_backup}
-                                        onChange={e => setFormData({ ...formData, receive_daily_backup: e.target.checked })}
-                                    />
-                                    <div>
-                                        <p className="font-medium">Günlük Rapor Maili</p>
-                                        <p className="text-xs text-gray-500">Her gün sonunda tüm öğrencilerin özetini içeren PDF al.</p>
-                                    </div>
-                                </label>
-
-                                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        className="w-5 h-5 text-gold-500 rounded focus:ring-gold-500"
-                                        checked={formData.receive_weekly_backup}
-                                        onChange={e => setFormData({ ...formData, receive_weekly_backup: e.target.checked })}
-                                    />
-                                    <div>
-                                        <p className="font-medium">Haftalık Rapor Maili</p>
-                                        <p className="text-xs text-gray-500">Hafta sonu detaylı analiz ve grafik içeren PDF al.</p>
-                                    </div>
-                                </label>
                             </div>
                         </div>
 
@@ -218,13 +166,13 @@ export default function Profile() {
                     </div>
 
                     <div className="glass-card p-6">
-                        <h3 className="font-bold mb-4">Manuel Yedek</h3>
+                        <h3 className="font-bold mb-4">Veri Dışa Aktar</h3>
                         <p className="text-sm text-gray-500 mb-4">
-                            Anlık olarak veritabanı yedeğini mail adresinize gönderir.
+                            Tüm ders geçmişinizi ve öğrenci verilerinizi anında indirin.
                         </p>
-                        <button onClick={handleManualBackup} className="w-full py-3 bg-gray-800 text-white dark:bg-white/10 rounded-xl hover:bg-gray-700 transition-all flex items-center justify-center gap-2">
-                            <FileText size={18} />
-                            Raporu Şimda Al
+                        <button onClick={handleDownloadReport} className="w-full py-3 bg-gold-500 text-black font-bold rounded-xl hover:bg-gold-400 transition-all flex items-center justify-center gap-2">
+                            <FileDown size={18} />
+                            Ders Raporu İndir (PDF)
                         </button>
                         <button
                             onClick={handleDownloadData}
