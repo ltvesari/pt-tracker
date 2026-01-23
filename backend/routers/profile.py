@@ -26,6 +26,12 @@ def update_settings(
     if not user_db:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Check if email is being changed and if it is already taken by someone else
+    if settings.email != user_db.email:
+        existing_email = session.exec(select(User).where(User.email == settings.email)).first()
+        if existing_email:
+             raise HTTPException(status_code=400, detail="Bu email adresi zaten kullanımda.")
+    
     user_db.first_name = settings.first_name
     user_db.last_name = settings.last_name
     user_db.email = settings.email

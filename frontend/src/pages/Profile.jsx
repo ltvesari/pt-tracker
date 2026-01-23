@@ -41,7 +41,8 @@ export default function Profile() {
             alert("Ayarlar güncellendi! ✅");
         } catch (err) {
             console.error(err);
-            alert("Güncelleme başarısız!");
+            const msg = err.response?.data?.detail || "Güncelleme başarısız!";
+            alert("❌ " + (typeof msg === 'string' ? msg : JSON.stringify(msg)));
         } finally {
             setLoading(false);
         }
