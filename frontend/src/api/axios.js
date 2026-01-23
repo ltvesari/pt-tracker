@@ -19,4 +19,19 @@ api.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
+// Add response interceptor to handle unauthorized access (401)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            // Force redirect to login
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;
