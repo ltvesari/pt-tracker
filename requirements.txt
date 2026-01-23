@@ -7,3 +7,4 @@ passlib[bcrypt]
 slowapi
 psycopg2-binary
 fastapi-mail
+httpx
