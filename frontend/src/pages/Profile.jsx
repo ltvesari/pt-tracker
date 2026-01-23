@@ -18,7 +18,7 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await api.get("/profile/me");
+                const res = await api.get("/auth/me");
                 setFormData({
                     first_name: res.data.first_name,
                     last_name: res.data.last_name,
@@ -62,6 +62,24 @@ export default function Profile() {
         } catch (err) {
             console.error(err);
             alert("Bir hata oluştu.");
+        }
+    };
+
+    const handleDownloadData = async () => {
+        try {
+            const res = await api.get("/profile/export-data", { responseType: 'blob' });
+
+            // Create download link
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `pt_tracker_backup_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            console.error("Download error", err);
+            alert("Yedek indirilemedi.");
         }
     };
 
@@ -188,7 +206,10 @@ export default function Profile() {
                             <FileText size={18} />
                             Raporu Şimda Al
                         </button>
-                        <button className="w-full mt-2 py-3 bg-gray-800 text-white dark:bg-white/10 rounded-xl hover:bg-gray-700 transition-all flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+                        <button
+                            onClick={handleDownloadData}
+                            className="w-full mt-2 py-3 bg-gray-800 text-white dark:bg-white/10 rounded-xl hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
+                        >
                             <Download size={18} />
                             Verileri İndir (JSON)
                         </button>
