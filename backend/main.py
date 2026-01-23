@@ -110,4 +110,16 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    import os
+    db_url = os.getenv("DATABASE_URL")
+    mail_user = os.getenv("MAIL_USERNAME")
+    
+    db_status = "configured (Postgres)" if db_url and "postgres" in db_url else "missing/sqlite"
+    mail_status = "configured" if mail_user else "missing"
+    
+    return {
+        "status": "ok",
+        "database": db_status,
+        "mail": mail_status,
+        "mail_port": os.getenv("MAIL_PORT", "587 (default)")
+    }
