@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 # EmailJS Configuration
 EMAILJS_SERVICE_ID = "service_x2qla28"
-EMAILJS_TEMPLATE_ID = "template_yvxepgr"
+EMAILJS_TEMPLATE_ID = "template_jza6jiu"
 EMAILJS_PUBLIC_KEY = "FThhlELIJPFP38k42"
 EMAILJS_PRIVATE_KEY = "Q136bb9r_0YLvvT60-vcA" # Provided by user
 

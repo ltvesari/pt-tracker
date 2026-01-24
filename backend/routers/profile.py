@@ -3,16 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from backend.database import get_session
 from backend.models import User
-from backend.routers.auth import get_current_user
-# from backend.utils.email import send_email # Removed
-from pydantic import BaseModel
-
-router = APIRouter(prefix="/profile", tags=["profile"])
+from typing import Optional
+from backend.routers.auth import get_current_user, get_password_hash # Import hash function
 
 class UserUpdate(BaseModel):
     first_name: str
     last_name: str
     email: str
+    password: Optional[str] = None # New optional field
 
 @router.put("/settings")
 def update_settings(
@@ -23,7 +21,7 @@ def update_settings(
     # Retrieve fresh from DB to update
     user_db = session.get(User, current_user.id)
     if not user_db:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     
     # Check if email is being changed and if it is already taken by someone else
     if settings.email != user_db.email:
@@ -34,6 +32,10 @@ def update_settings(
     user_db.first_name = settings.first_name
     user_db.last_name = settings.last_name
     user_db.email = settings.email
+    
+    # Update password if provided
+    if settings.password:
+        user_db.password_hash = get_password_hash(settings.password)
     
     session.add(user_db)
     session.commit()

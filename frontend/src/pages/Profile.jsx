@@ -31,6 +31,12 @@ export default function Profile() {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
+
+        if (formData.password && formData.password !== formData.confirm_password) {
+            alert("Şifreler uyuşmuyor!");
+            return;
+        }
+
         setLoading(true);
         try {
             await api.put("/profile/settings", formData);
@@ -120,9 +126,6 @@ export default function Profile() {
                             </div>
                         </div>
 
-
-
-
                         <div className="space-y-1">
                             <label className="text-sm text-gray-500">Email</label>
                             <div className="relative">
@@ -134,6 +137,39 @@ export default function Profile() {
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                 />
                             </div>
+                        </div>
+
+                        {/* Password Change Section */}
+                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-white/10">
+                            <h3 className="font-bold pb-2 mb-4 flex items-center gap-2">
+                                <Shield size={16} className="text-gray-400" />
+                                Şifre Değiştir
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-sm text-gray-500">Yeni Şifre</label>
+                                    <input
+                                        type="password"
+                                        className="input-field"
+                                        placeholder="Boş bırakılabilir"
+                                        value={formData.password || ""}
+                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-sm text-gray-500">Yeni Şifre (Tekrar)</label>
+                                    <input
+                                        type="password"
+                                        className="input-field"
+                                        placeholder="Boş bırakılabilir"
+                                        value={formData.confirm_password || ""}
+                                        onChange={e => setFormData({ ...formData, confirm_password: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-2">
+                                * Şifrenizi değiştirmek istemiyorsanız bu alanları boş bırakın.
+                            </p>
                         </div>
 
                         <button disabled={loading} className="btn-primary w-full mt-6 py-3 flex items-center justify-center gap-2">
