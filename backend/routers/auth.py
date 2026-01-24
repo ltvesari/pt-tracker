@@ -181,7 +181,9 @@ async def forgot_password(request: ForgotPasswordRequest, session: Session = Dep
     
     template_params = {
         "to_name": user.first_name,
-        "to_email": user.email,
+        "to_email": user.email, # Tries {{to_email}}
+        "email": user.email,    # Tries {{email}}
+        "reply_to": user.email, # Tries {{reply_to}}
         "message": message_content
     }
     
