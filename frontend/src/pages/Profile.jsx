@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
-import { User, Shield, Save, FileText, Download, FileDown, Mail } from "lucide-react";
+import { User, Shield, Save, FileText, Download, FileDown, Mail, LogOut } from "lucide-react";
 
 export default function Profile() {
     const { user, logout } = useAuth();
@@ -90,10 +90,19 @@ export default function Profile() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <User className="text-gold-500" />
-                Profil ve Ayarlar
-            </h1>
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <User className="text-gold-500" />
+                    Profil ve Ayarlar
+                </h1>
+                <button
+                    onClick={logout}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-all font-medium text-sm"
+                >
+                    <LogOut size={16} />
+                    Çıkış Yap
+                </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* User Info Card */}
@@ -192,13 +201,6 @@ export default function Profile() {
                         </div>
                         <h2 className="text-xl font-bold">{user?.first_name} {user?.last_name}</h2>
                         <p className="text-gray-500 text-sm">@{user?.username}</p>
-
-                        <button
-                            onClick={logout}
-                            className="mt-6 w-full py-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                        >
-                            Çıkış Yap
-                        </button>
                     </div>
 
                     <div className="glass-card p-6">
