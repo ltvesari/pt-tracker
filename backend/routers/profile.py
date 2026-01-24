@@ -7,6 +7,8 @@ from typing import Optional
 from backend.routers.auth import get_current_user, get_password_hash # Import hash function
 from pydantic import BaseModel
 
+router = APIRouter(prefix="/profile", tags=["profile"])
+
 class UserUpdate(BaseModel):
     first_name: str
     last_name: str
