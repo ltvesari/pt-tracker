@@ -5,6 +5,7 @@ from backend.database import get_session
 from backend.models import User
 from typing import Optional
 from backend.routers.auth import get_current_user, get_password_hash # Import hash function
+from pydantic import BaseModel
 
 class UserUpdate(BaseModel):
     first_name: str
