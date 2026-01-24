@@ -59,7 +59,7 @@ def update_student(
 ):
     db_student = session.get(Student, student_id)
     if not db_student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı") # Student not found
     
     student_data_dict = student_data.model_dump(exclude_unset=True)
     for key, value in student_data_dict.items():
@@ -111,7 +111,7 @@ def deduct_lesson(
 ):
     student = session.get(Student, student_id)
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı") # Student not found
     
     # Logic: Allow negative balance
     student.package_remaining -= 1
@@ -135,7 +135,7 @@ def undo_last_lesson(
 ):
     student = session.get(Student, student_id)
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı") # Student not found
     
     # Find last deduct log
     statement = select(LessonLog).where(
@@ -146,7 +146,7 @@ def undo_last_lesson(
     last_log = session.exec(statement).first()
     
     if not last_log:
-        raise HTTPException(status_code=400, detail="No lesson to undo")
+        raise HTTPException(status_code=400, detail="Geri alınacak ders bulunamadı") # No lesson to undo
     
     # Revert
     student.package_remaining += last_log.count
@@ -173,10 +173,10 @@ def add_package_lessons(
 ):
     student = session.get(Student, student_id)
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı") # Student not found
     
     if data.count <= 0:
-        raise HTTPException(status_code=400, detail="Count must be positive")
+        raise HTTPException(status_code=400, detail="Miktar pozitif olmalıdır") # Count must be positive
 
     # Increase balance
     student.package_remaining += data.count
@@ -197,7 +197,7 @@ def add_package_lessons(
 def delete_student(student_id: int, session: Session = Depends(get_session)):
     student = session.get(Student, student_id)
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı") # Student not found
     session.delete(student)
     session.commit()
     return {"ok": True}
@@ -209,7 +209,7 @@ def get_student_logs(
 ):
     student = session.get(Student, student_id)
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı") # Student not found
         
     logs = session.exec(select(LessonLog).where(LessonLog.student_id == student_id).order_by(LessonLog.date.desc())).all()
     return logs

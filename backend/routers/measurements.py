@@ -27,7 +27,7 @@ def create_measurement(
 ):
     student = session.get(Student, measurement.student_id)
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı")
     
     db_measurement = BodyMeasurement.model_validate(measurement)
     if not db_measurement.date:
@@ -51,7 +51,7 @@ def get_student_measurements(
 def delete_measurement(measurement_id: int, session: Session = Depends(get_session)):
     measurement = session.get(BodyMeasurement, measurement_id)
     if not measurement:
-        raise HTTPException(status_code=404, detail="Measurement not found")
+        raise HTTPException(status_code=404, detail="Ölçüm bulunamadı")
     session.delete(measurement)
     session.commit()
     return {"ok": True}

@@ -60,11 +60,24 @@ def register(user: UserCreate, request: Request, session: Session = Depends(get_
     # Check existing
     existing_user = session.exec(select(User).where(User.username == user.username)).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
+        raise HTTPException(status_code=400, detail="Bu kullanıcı adı zaten alınmış")
     
     existing_email = session.exec(select(User).where(User.email == user.email)).first()
     if existing_email:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Bu email adresi zaten kayıtlı")
+
+    # ... (skipping some lines to next chunk if needed, but I can do contiguous if close)
+    # Actually I can't skip lines in replace_file_content unless I include them.
+    # The register function has multiple errors.
+    
+    # Let's do multiple small replaces or one big one if they are close.
+    # They are close in `register`.
+    
+    # register function ends line 87.
+    # get_current_user lines 93-110.
+    # login lines 116-140.
+    
+    # I will use multi_replace for this file as errors are scattered.
     
     # Create User
     try:
@@ -93,7 +106,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Kimlik doğrulanamadı", # Could not validate credentials
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -121,7 +134,7 @@ def login(form_data: LoginRequest, session: Session = Depends(get_session)):
         print("User not found in DB")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Kullanıcı adı veya şifre hatalı", # Incorrect username or password
             headers={"WWW-Authenticate": "Bearer"},
         )
     
